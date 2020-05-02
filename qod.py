@@ -21,8 +21,9 @@ def gquote():
     author = '_'.join(author.split())
     return quote, author
 
+
 def dict_f(quote, author, data=None):
-    if data == None:
+    if not data:
         data = {}
         data['quotes'] = ['']
     quote_formatted = f'{quote}  |  @{author}'
@@ -35,7 +36,8 @@ def read_json():
     try:
         with open('data.json') as f:
             return json.load(f)
-    except:
+    except Exception as e:
+        print(e)
         return
 
 

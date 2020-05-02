@@ -1,9 +1,9 @@
+# TODO add async database usage.
 import telebot
-from qod import *
+from qod import read_json, write_json, quoting, dict_f, gquote
 import time
 from telebot import types
 import requests
-import json
 """
 This is a detailed example using almost every command of the API
 """
@@ -15,9 +15,9 @@ userStep = {}  # so they won't reset every time the bot restarts
 
 commands = {  # command description used in the "help" command
     'start': 'Get used to the bot',
-    'help': 'Gives you information about the available commands',
     'qod': 'A \'QUOTE\' of the day',
     'getImage': 'Get a random cat',
+    'help': 'back to menu',
     'currency': 'Get Ukraine cur/exc rates'
 }
 
@@ -25,7 +25,7 @@ imageSelect = types.ReplyKeyboardMarkup(
     one_time_keyboard=True)  # create the image selection keyboard
 imageSelect.add('Kitties')
 menuSelect = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-menuSelect.add('/help', '/start', '/getImage', '/currency', '/qod')
+menuSelect.add('/start', '/getImage', '/currency', '/qod')
 
 hideBoard = types.ReplyKeyboardRemove(
 )  # if sent as reply_markup, will hide the keyboard
@@ -69,9 +69,11 @@ def command_start(m):
     if cid not in knownUsers:  # if user hasn't used the "/start" command yet:
         knownUsers.append(
             cid
-        )  # save user id, so you could brodcast messages to all users of this bot later
+        )  # save user id, so you could brodcast messages to all users of this
+        #  bot later
         userStep[
-            cid] = 0  # save user id and his current "command level", so he can use the "/getImage" command
+            cid] = 0  # save user id and his current "command level", so he
+        #  can use the "/getImage" command
         bot.send_message(cid, "Hello, stranger, let me scan you...")
         bot.send_message(cid, "Scanning complete, I know you now")
         command_help(m)  # show the new user the help page
@@ -83,8 +85,9 @@ def command_start(m):
         data = read_json()
         write_json(dict_f(quote, author, data))
         bot.send_message(cid, 'Quotes database updated')
-    except:
+    except Exception as e:
         bot.send_message(cid, 'Can\'t connect to API!')
+        print(e)
     finally:
         bot.send_message(cid, '/help')
 
@@ -94,7 +97,8 @@ def command_start(m):
 def command_help(m):
     cid = m.chat.id
     help_text = "The following commands are available: \n"
-    for key in commands:  # generate help text out of the commands dictionary defined at the top
+    for key in commands:  # generate help text out of the commands
+        # dictionary defined at the top
         help_text += "/" + key + ": "
         help_text += commands[key] + "\n"
     bot.send_message(cid, help_text,
@@ -116,15 +120,16 @@ def command_qod(m):
 def currency_privat(m):
     cid = m.chat.id
     try:
-        PRIVAT_BANK_URL = 'https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5'
+        PRIVAT_BANK_URL =\
+            'https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5'
         pj = requests.get(PRIVAT_BANK_URL).json()
         for i in pj:
             bot.send_message(
-                cid,
-                f"|{i['ccy']}\t|\t{i['base_ccy']}|\n\nBuy\t|\t{i['buy']}\nSell\t|\t{i['sale']}"
-            )
-    except:
+                cid, f"|{i['ccy']}\t|\t{i['base_ccy']}|\n\n"
+                f"Buy\t|\t{i['buy']}\nSell\t|\t{i['sale']}")
+    except Exception as e:
         bot.send_message(cid, 'Sorry bank has some problems!')
+        print(e)
     finally:
         bot.send_message(cid, '/help')
 
@@ -136,8 +141,8 @@ def command_image(m):
     bot.send_message(cid,
                      "Please choose your image now",
                      reply_markup=imageSelect)  # show the keyboard
-    userStep[
-        cid] = 1  # set the user to the next step (expecting a reply in the listener now)
+    userStep[cid] = 1  # set the user to the next step
+    # (expecting a reply in the listener now)
     bot.send_message(cid, '/help')
 
 
@@ -147,12 +152,13 @@ def msg_image_select(m):
     cid = m.chat.id
     text = m.text
     try:
-        # for some reason the 'upload_photo' status isn't quite working (doesn't show at all)
+        # for some reason the 'upload_photo' status isn't quite working
+        #  (doesn't show at all)
         bot.send_chat_action(cid, 'typing')
-        img = requests.get(
-            'https://thecatapi.com/api/images/get?format=src&type=gif&size=medium'
-        )
-        if text == 'Kitties':  # send the appropriate image based on the reply to the "/getImage" command
+        img = requests.get('https://thecatapi.com/api/images/get'
+                           '?format=src&type=gif&size=medium')
+        if text == 'Kitties':  # send the appropriate image based on the reply
+            #  to the "/getImage" command
             bot.send_video(
                 cid, img.url, reply_markup=hideBoard
             )  # send file and hide keyboard, after image is sent
@@ -161,17 +167,17 @@ def msg_image_select(m):
         else:
             bot.send_message(cid, "Please, use the predefined keyboard!")
             bot.send_message(cid, "Please try again")
-        # with open('last_cat.gif', 'wb') as f:
-        #     image = requests.get(img.url).content
-        #     f.write(image)
-    except:
-        bot.send_message(cid,'Kitties servers is bugging atm')
-        # with open('last_cat.gif', 'rb') as f:
-        #     if not f:
-        #         bot.send_message('We don\'t have any kitties now')
-
-        #     else:
-        #         bot.send_video(cid, f, reply_markup=hideBoard)
+        data = read_json()
+        data['img_url'] = img.url
+        write_json(data)
+    except Exception as e:
+        print(e)
+        try:
+            img = read_json()['img_url']
+            bot.send_video(cid, img, reply_markup=hideBoard)
+        except Exception as e:
+            print(e)
+            bot.send_message(cid, "We dont have any kitties now")
     finally:
         bot.send_message(cid, '/help')
 
@@ -180,7 +186,7 @@ def msg_image_select(m):
 @bot.message_handler(func=lambda message: message.text == "hi")
 def command_text_hi(m):
     bot.send_message(m.chat.id, "I love you too!")
-    bot.send_message(cid, '/help')
+    bot.send_message(m.chat.id, '/help')
 
 
 # default handler for every other text
@@ -193,5 +199,4 @@ def command_default(m):
 
 
 # quotes
-
 bot.polling()
