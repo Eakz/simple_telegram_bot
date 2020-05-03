@@ -4,11 +4,12 @@ from qod import read_json, write_json, quoting, dict_f, gquote
 import time
 from telebot import types
 import requests
+from key import TOKEN
 """
 This is a detailed example using almost every command of the API
 """
 
-TOKEN = '1243531721:AAFczJI3DL04WaiGwwtxtlNAvRkxFU-45WQ'
+TOKEN = TOKEN
 
 knownUsers = []  # todo: save these in a file,
 userStep = {}  # so they won't reset every time the bot restarts
