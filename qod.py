@@ -18,7 +18,10 @@ def gquote():
     quote_get = requests.get('http://quotes.rest/qod.json')
     quote = quote_get.json()['contents']['quotes'][0]['quote']
     author = quote_get.json()['contents']['quotes'][0]['author']
-    author = '_'.join(author.split())
+    try:
+        author = '_'.join(author.split())
+    except:
+        author = ''
     return quote, author
 
 
