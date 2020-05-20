@@ -121,8 +121,8 @@ def command_qod(m):
 def currency_privat(m):
     cid = m.chat.id
     try:
-        PRIVAT_BANK_URL =\
-            'https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5'
+        PRIVAT_BANK_URL = 'https://api.privatbank.ua/p24api/'
+        'pubinfo?json&exchange&coursid=5'
         pj = requests.get(PRIVAT_BANK_URL).json()
         for i in pj:
             bot.send_message(
