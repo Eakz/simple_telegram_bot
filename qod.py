@@ -20,8 +20,9 @@ def gquote():
     author = quote_get.json()['contents']['quotes'][0]['author']
     try:
         author = '_'.join(author.split())
-    except:
+    except Exception as e:
         author = ''
+        print('Error - ', e)
     return quote, author
 
 
