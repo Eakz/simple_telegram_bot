@@ -1,2 +1,4 @@
 .vscode
 key.py
+data.json
+__pycache__
